@@ -1,8 +1,13 @@
 import React from "react";
 import { useForm, Controller } from "react-hook-form";
 import { Input, Radio, DatePicker, Button } from "antd";
+import PhoneInput from "react-phone-number-input";
+import "react-phone-number-input/style.css";
+import { useState } from "react";
 
 const RegistrationForm = () => {
+  const [phone, setPhone] = useState();
+
   const {
     handleSubmit,
     control,
@@ -16,6 +21,7 @@ const RegistrationForm = () => {
     console.log("Успешно зарегистрировано");
     reset();
   };
+
   const watchPassWord = watch("password");
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -46,7 +52,6 @@ const RegistrationForm = () => {
         />
         <p>{errors.email?.message}</p>
       </div>
-
       <div>
         <label>Пароль:</label>
         <Controller
@@ -59,10 +64,16 @@ const RegistrationForm = () => {
               message:
                 "Пароль должен быть не меньше 6 символов и содержать хотя бы одну заглавную букву",
             },
-            // validate: { upperLetter: let => let.split('').
-            //   value:  ,
-            //   message: "Пароль должен содержать хотя бы одну заглавную букву",
-            // },
+            validate: (letter) => {
+              return (
+                letter
+                  .split("")
+                  .filter((item) => !isFinite(item))
+                  .map((item) => item === item.toUpperCase())
+                  .includes(true) ||
+                "Пароль должен содержать хотя бы одну заглавную букву"
+              );
+            },
           }}
           render={({ field }) => (
             <Input {...field} placeholder="Введите пароль" />
@@ -79,23 +90,15 @@ const RegistrationForm = () => {
           rules={{
             required: "Поле обязательно для заполнения",
             validate: (val) => {
-              if (watchPassWord !== val) {
-                return "Пароли не совпадают";
-              }
-              // {value.split("").map((item) => item === item.toUpperCase()) ||
-              // "Пароль должен содержать хотя бы одну заглавную букву"}
-            },
-            minLength: {
-              value: 6,
-              message:
-                "Пароль должен быть не меньше 6 символов и содержать хотя бы одну заглавную букву",
+              console.log(watchPassWord === val);
+              return watchPassWord === val || "Пароли не совпадают";
             },
           }}
           render={({ field }) => (
             <Input {...field} placeholder="Подтвердите пароль" />
           )}
         />
-        <p>{errors.password?.message}</p>
+        <p>{errors["confirm-password"]?.message}</p>
       </div>
 
       <div>
@@ -131,25 +134,12 @@ const RegistrationForm = () => {
 
       <div>
         <label>Номер телефона:</label>
-        <Controller
-          defaultValue={"+375"}
-          name="phone"
-          control={control}
-          rules={{
-            required: "Введите номер телефона",
-            minLength: {
-              value: 13,
-              message: "Некорректно введён номер телефона",
-            },
-            maxLength: {
-              value: 13,
-              message: "Некорректно введён номер телефона",
-            },
-            // validate: (value) =>
-            //   value === Number.isFinite(value.slice(4)) ||
-            //   "Некорректно введён номер телефона",
-          }}
-          render={({ field }) => <Input {...field} />}
+
+        <PhoneInput
+          rules={{ required: "Выберите пол" }}
+          placeholder="Введите свой номер телефона"
+          value={phone}
+          onChange={setPhone}
         />
         <p>{errors.phone?.message}</p>
       </div>
